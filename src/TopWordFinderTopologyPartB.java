@@ -17,27 +17,19 @@ public class TopWordFinderTopologyPartB {
 
   public static void main(String[] args) throws Exception {
 
-
+    if (args.length != 1) throw new Exception("File path missing");
+    
     TopologyBuilder builder = new TopologyBuilder();
 
     Config config = new Config();
     config.setDebug(true);
 
+    config.put("input-file", args[0]);
 
-    /*
-    ----------------------TODO-----------------------
-    Task: wire up the topology
-
-    NOTE:make sure when connecting components together, using the functions setBolt(name,…) and setSpout(name,…),
-    you use the following names for each component:
-    FileReaderSpout -> "spout"
-    SplitSentenceBolt -> "split"
-    WordCountBolt -> "count"
-
-
-
-    ------------------------------------------------- */
-
+    builder.setSpout("spout", new FileReaderSpout(), 5);
+    
+    builder.setBolt("split", new SplitSentenceBolt(), 8).shuffleGrouping("spout");
+    builder.setBolt("count", new WordCountBolt(), 12).fieldsGrouping("split", new Fields("word"));
 
     config.setMaxTaskParallelism(3);
 

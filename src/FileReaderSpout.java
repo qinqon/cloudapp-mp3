@@ -11,23 +11,23 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 
 public class FileReaderSpout implements IRichSpout {
   private SpoutOutputCollector _collector;
   private TopologyContext context;
-
+  private BufferedReader reader;
 
   @Override
   public void open(Map conf, TopologyContext context,
                    SpoutOutputCollector collector) {
 
-     /*
-    ----------------------TODO-----------------------
-    Task: initialize the file reader
-
-
-    ------------------------------------------------- */
-
+    String inputFilePath = (String)conf.get("input-file");
+    try{
+        this.reader = new BufferedReader(new FileReader(inputFilePath));
+    }catch(Exception exception){
+        exception.printStackTrace();
+    }
     this.context = context;
     this._collector = collector;
   }
@@ -35,17 +35,21 @@ public class FileReaderSpout implements IRichSpout {
   @Override
   public void nextTuple() {
 
-     /*
-    ----------------------TODO-----------------------
-    Task:
-    1. read the next line and emit a tuple for it
-    2. don't forget to sleep when the file is entirely read to prevent a busy-loop
-
-    ------------------------------------------------- */
-
+    try{
+      String line = reader.readLine();
+      if (line != null)
+      {
+          _collector.emit(new Values(line));
+      }
+      else
+      {
+          Utils.sleep(100);
+      }
+    }catch(Exception exception){
+        exception.printStackTrace();
+    }
 
   }
-
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
@@ -55,12 +59,11 @@ public class FileReaderSpout implements IRichSpout {
 
   @Override
   public void close() {
-   /*
-    ----------------------TODO-----------------------
-    Task: close the file
-
-
-    ------------------------------------------------- */
+    try{
+        reader.close();
+    }catch(Exception exception){
+        exception.printStackTrace();
+    }
 
   }
 
