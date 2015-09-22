@@ -25,22 +25,14 @@ public class TopWordFinderTopologyPartD {
     Config config = new Config();
     config.setDebug(true);
 
+    config.put("input-file", args[0]);
 
-    /*
-    ----------------------TODO-----------------------
-    Task: wire up the topology
-
-    NOTE:make sure when connecting components together, using the functions setBolt(name,…) and setSpout(name,…),
-    you use the following names for each component:
+    builder.setSpout("spout", new FileReaderSpout(), 1);
     
-    FileReaderSpout -> "spout"
-    SplitSentenceBolt -> "split"
-    WordCountBolt -> "count"
-	NormalizerBolt -> "normalize"
-    TopNFinderBolt -> "top-n"
-
-
-    ------------------------------------------------- */
+    builder.setBolt("split", new SplitSentenceBolt(), 8).shuffleGrouping("spout");
+    builder.setBolt("normalize", new NormalizerBolt(), 8).fieldsGrouping("split", new Fields("word"));
+    builder.setBolt("count", new WordCountBolt(), 12).fieldsGrouping("normalize", new Fields("word"));
+    builder.setBolt("top-n", new TopNFinderBolt(N), 1).fieldsGrouping("count", new Fields("word", "count"));
 
 
     config.setMaxTaskParallelism(3);

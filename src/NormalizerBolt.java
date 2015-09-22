@@ -22,7 +22,7 @@ public class NormalizerBolt extends BaseBasicBolt {
   public void execute(Tuple tuple, BasicOutputCollector collector) {
     String word = tuple.getString(0).toLowerCase();
         
-    if (! comonWords.contains(word)){
+    if (! commonWords.contains(word)){
         collector.emit(new Values(word));
     }
   }
